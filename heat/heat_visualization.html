@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="refresh" content="5"> 
+	<meta charset='gb2312' />
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<style type="text/css">
+	 .axis path,
+	 .axis line {
+	   fill: none;
+	   stroke: #1E90FF;
+	   stroke-width: 1;
+	   shape-rendering: crispEdges;
+	 }
+	 .stroke_width{
+	   stroke-width: 0.3vmin;
+	 }
+	</style>
+</head>
+<body>
+	<script>
+		// 边框的颜色
+		var border_color = "#1E90FF";
+		// 用于填充的颜色
+		var fillcolor = "rgba(204, 238, 255, 0.1)";
+		var dotcolor = "rgba(255, 255, 255, 0.9)";
+		// 基金净值数据
+		var dataset =[];
+		var dates =[];
+		var jzset =[];
+		d3.csv("file.csv", function(error,data){
+		   // if(error){ console.log(error);}
+		   console.log(data);
+		   data.forEach(function(d) {
+			    var cx = d.date;
+			    var cy = d.jz; 
+			    dataset.push([cx,cy]);
+			    dates.push(cx);
+			    jzset.push(cy);
+		  })
+		 
+		var w1 = 1000;
+		var h1 = 500;
+		 
+		var svg = d3.select("body").append('svg')
+		     .attr("width", w1)
+		     .attr("height", h1);
+		 
+		var div2 = d3.select("body").append('div')
+		     .attr("class", "tooltip2")
+		     .style("opacity", 0);
+		 
+		var margin = {top: 20, right: 25, bottom: 100, left: 60};
+		   width = w1 - margin.left - margin.right,
+		   height = h1 - margin.top - margin.bottom;
+		 
+		var new_svg = svg.append("g")
+		   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+		 
+		var format = d3.time.format("%H:%M:%S");
+		console.log(dates);
+		var x = d3.time.scale()
+		    .domain([format.parse(dates[0]),
+		             format.parse(dates[dates.length-1])])
+		    .range([0, width]);
+		console.log(x);
+
+		var xAxis = d3.svg.axis()
+		    .scale(x)
+		    .orient("bottom")
+		    .ticks(10)
+		    .tickFormat(d3.time.format("%H:%M:%S"));
+		 
+		var y = d3.scale.linear()
+		    .domain([0, d3.max(jzset, function(d){ return d;})*1.1])
+		    .range([height, 0]);
+		console.log(y)
+		 
+		var yAxis = d3.svg.axis()
+		    .scale(y)
+		    .orient("left")
+		    .ticks(10);
+		 
+		// Define the line
+		var line = d3.svg.line()
+		    .x(function(d){return x(format.parse(d[0]))})
+		    .y(function(d){return y(d[1])})
+		    .interpolate("linear");
+		 
+		// Add the X Axis
+		new_svg.append("g")
+		    .attr("transform", "translate(0," + height + ")")
+		    .attr("class", "x axis")
+		    .style("fill",border_color)
+		    .style("font-size","1em")
+		    .call(xAxis)
+		    .selectAll("text")
+		    .attr("transform", "rotate(-70)")
+		    .style("text-anchor", "end");
+		 
+		// Add the Y Axis
+		new_svg.append("g")
+		    .attr("class", "y axis")
+		    .style("fill",border_color)
+		    .style("font-size","1.3em")
+		    .call(yAxis);
+		 
+		// Add the line
+		var svg_path1 = new_svg.append('path')
+		    .attr("d", line(dataset))
+		    .attr("fill","none")
+		    .attr("stroke-width","0.16em")
+		    .attr("stroke",border_color);
+
+		});
+	</script>  
+</body>
+</html>
